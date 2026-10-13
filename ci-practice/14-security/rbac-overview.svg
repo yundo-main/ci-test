@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">14번 RBAC 권한 흐름과 검증</title>
+  <desc id="desc">Backend ServiceAccount가 RoleBinding을 통해 같은 Namespace의 Service와 Endpoint를 조회하고 Secret 조회는 거부되는 흐름을 보여준다.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .title { font: 700 30px Arial, sans-serif; fill: #0f172a; }
+      .heading { font: 700 21px Arial, sans-serif; fill: #0f172a; }
+      .body { font: 16px Arial, sans-serif; fill: #334155; }
+      .small { font: 14px Arial, sans-serif; fill: #475569; }
+      .source { fill: #eff6ff; stroke: #3b82f6; stroke-width: 2; }
+      .binding { fill: #f5f3ff; stroke: #8b5cf6; stroke-width: 2; }
+      .permission { fill: #ecfdf5; stroke: #10b981; stroke-width: 2; }
+      .denied { fill: #fef2f2; stroke: #ef4444; stroke-width: 2; }
+      .flow { stroke: #475569; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+      .deny-flow { stroke: #dc2626; stroke-width: 2.5; fill: none; stroke-dasharray: 8 6; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="#ffffff"/>
+  <text x="60" y="58" class="title">14번 RBAC: Backend 권한 흐름과 검증</text>
+  <text x="60" y="90" class="body">기준 manifest: practice-order/14-security/3tier-backend-rbac.yml</text>
+
+  <rect x="60" y="135" width="310" height="220" rx="16" class="source"/>
+  <text x="95" y="180" class="heading">ServiceAccount</text>
+  <text x="95" y="225" class="body">fastcgi-backend</text>
+  <text x="95" y="265" class="small">Backend Pod의 신원</text>
+  <text x="95" y="300" class="small">Namespace: 실습 Namespace</text>
+  <path d="M370 245 H490" class="flow"/>
+
+  <rect x="490" y="135" width="310" height="220" rx="16" class="binding"/>
+  <text x="525" y="180" class="heading">RoleBinding</text>
+  <text x="525" y="225" class="body">fastcgi-backend-reader</text>
+  <text x="525" y="265" class="small">Subject: ServiceAccount</text>
+  <text x="525" y="300" class="small">Role과 신원을 연결</text>
+  <path d="M800 245 H920" class="flow"/>
+
+  <rect x="920" y="135" width="310" height="220" rx="16" class="binding"/>
+  <text x="955" y="180" class="heading">Role</text>
+  <text x="955" y="225" class="body">fastcgi-backend-reader</text>
+  <text x="955" y="265" class="small">resources: services, endpoints</text>
+  <text x="955" y="300" class="small">verbs: get, list</text>
+  <path d="M1230 245 H1350" class="flow"/>
+
+  <rect x="1350" y="135" width="190" height="220" rx="16" class="permission"/>
+  <text x="1380" y="180" class="heading">API 권한</text>
+  <text x="1380" y="225" class="small">Service 조회</text>
+  <text x="1380" y="260" class="small">Endpoint 조회</text>
+  <text x="1380" y="305" class="small">같은 Namespace</text>
+
+  <rect x="100" y="470" width="650" height="250" rx="18" class="permission"/>
+  <text x="140" y="520" class="heading">허용 검증</text>
+  <text x="140" y="565" class="body">kubectl auth can-i get services</text>
+  <text x="140" y="605" class="body">결과: yes</text>
+  <text x="140" y="655" class="body">kubectl auth can-i list endpoints</text>
+  <text x="140" y="695" class="body">결과: yes</text>
+  <path d="M1080 355 V430 H425 V470" class="flow"/>
+
+  <rect x="850" y="470" width="650" height="250" rx="18" class="denied"/>
+  <text x="890" y="520" class="heading">비허용 검증</text>
+  <text x="890" y="565" class="body">kubectl auth can-i get secrets</text>
+  <text x="890" y="605" class="body">결과: no</text>
+  <text x="890" y="655" class="small">Role 규칙에 Secret이 없으므로</text>
+  <text x="890" y="690" class="small">최소 권한 원칙이 유지된다.</text>
+  <path d="M1150 355 V430 H1175 V470" class="deny-flow"/>
+
+  <rect x="100" y="790" width="1400" height="62" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="800" y="828" text-anchor="middle" class="body">RBAC는 네트워크 통제가 아니라 Kubernetes API 요청의 주체·대상·동작을 제어한다.</text>
+</svg>

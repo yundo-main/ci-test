@@ -1,0 +1,39 @@
+# NFS Server Pod가 사용할 노드 커널 모듈을 준비하는 실습용 DaemonSet
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nfs-kernel-modules
+  labels:
+    app: nfs-kernel-modules
+spec:
+  selector:
+    matchLabels:
+      app: nfs-kernel-modules
+  template:
+    metadata:
+      labels:
+        app: nfs-kernel-modules
+    spec:
+      hostPID: true
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+        - name: modprobe
+          image: ubuntu:24.04
+          securityContext:
+            privileged: true
+          command: ["/bin/sh", "-c"]
+          args:
+            - >-
+              chroot /host modprobe nfsd &&
+              chroot /host modprobe nfs &&
+              echo "NFS kernel modules are loaded" &&
+              sleep 3600
+          volumeMounts:
+            - name: host-root
+              mountPath: /host
+      volumes:
+        - name: host-root
+          hostPath:
+            path: /
+            type: Directory

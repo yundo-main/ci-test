@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="920" viewBox="0 0 1500 920" role="img" aria-labelledby="title desc">
+  <title id="title">초기 이미지 기반 3-Tier 실습 구조</title>
+  <desc id="desc">초기 이미지 기반 3-Tier 실습의 내부 통신 구조와, 외부 접근은 11번 Ingress 실습 이후 가능하다는 흐름을 보여준다.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #0f172a; }
+      .heading { font: 700 20px Arial, sans-serif; fill: #0f172a; }
+      .body { font: 16px Arial, sans-serif; fill: #334155; }
+      .small { font: 14px Arial, sans-serif; fill: #475569; }
+      .tier { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 2; }
+      .frontend { fill: #ecfdf5; stroke: #10b981; stroke-width: 2; }
+      .backend { fill: #eff6ff; stroke: #3b82f6; stroke-width: 2; }
+      .database { fill: #fff7ed; stroke: #f97316; stroke-width: 2; }
+      .support { fill: #f5f3ff; stroke: #8b5cf6; stroke-width: 2; }
+      .storage { fill: #fefce8; stroke: #ca8a04; stroke-width: 2; }
+      .flow { stroke: #475569; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+      .dashed { stroke: #64748b; stroke-width: 2; fill: none; stroke-dasharray: 7 6; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1500" height="920" fill="#ffffff"/>
+  <text x="60" y="55" class="title">초기 이미지 기반 3-Tier 실습 구조</text>
+  <text x="60" y="84" class="body">기준 manifest: k8s/practice-order/10-3tier/</text>
+  <text x="920" y="84" class="body">외부 접근: 11번 Ingress 적용 후 가능</text>
+
+  <rect x="50" y="120" width="1400" height="330" rx="20" class="tier"/>
+  <text x="80" y="160" class="heading">3-Tier 내부 계층과 다음 단계 Ingress</text>
+  <text x="80" y="184" class="small">현재: ClusterIP 내부 통신 · 외부 경로(/api/, /)는 11번에서 적용</text>
+
+  <rect x="90" y="195" width="330" height="200" rx="16" class="frontend"/>
+  <text x="120" y="238" class="heading">Frontend</text>
+  <text x="120" y="276" class="body">frontend.yml</text>
+  <text x="120" y="310" class="small">Deployment · ConfigMap · Service</text>
+  <text x="120" y="340" class="small">nginx:stable · frontend:80</text>
+  <text x="120" y="370" class="small">ConfigMap: frontend-html</text>
+
+  <rect x="585" y="195" width="330" height="200" rx="16" class="backend"/>
+  <text x="615" y="238" class="heading">Backend</text>
+  <text x="615" y="276" class="body">backend.yml</text>
+  <text x="615" y="310" class="small">Deployment · ConfigMap · Service</text>
+  <text x="615" y="340" class="small">python:3.12-slim · fastcgi-backend:8000</text>
+  <text x="615" y="370" class="small">ConfigMap: backend-app</text>
+
+  <rect x="1080" y="195" width="330" height="200" rx="16" class="database"/>
+  <text x="1110" y="238" class="heading">Database</text>
+  <text x="1110" y="276" class="body">StatefulSet: mariadb</text>
+  <text x="1110" y="310" class="small">image: mariadb:11</text>
+  <text x="1110" y="340" class="small">Storage: nfs-csi PVC</text>
+  <text x="1110" y="370" class="small">Service: mariadb:3306</text>
+
+  <path d="M420 295 H585" class="flow"/>
+  <text x="456" y="278" class="small">ClusterIP DNS</text>
+  <path d="M915 295 H1080" class="flow"/>
+  <text x="951" y="278" class="small">mariadb:3306</text>
+
+  <rect x="50" y="500" width="660" height="300" rx="20" class="support"/>
+  <text x="80" y="540" class="heading">공통 연결 정보와 저장소</text>
+
+  <rect x="90" y="575" width="260" height="155" rx="14" class="support"/>
+  <text x="118" y="615" class="heading">ConfigMap</text>
+  <text x="118" y="652" class="small">각 tier manifest에 포함</text>
+  <text x="118" y="682" class="small">HTML · main.py 제공</text>
+  <text x="118" y="712" class="small">Pod 파일로 마운트</text>
+
+  <rect x="410" y="575" width="260" height="155" rx="14" class="support"/>
+  <text x="438" y="615" class="heading">Secret</text>
+  <text x="438" y="652" class="small">mariadb-secret</text>
+  <text x="438" y="682" class="small">DB 사용자·비밀번호</text>
+  <text x="438" y="712" class="small">Backend 환경 변수로 주입</text>
+
+  <path d="M255 575 V450" class="dashed"/>
+  <path d="M540 575 V450" class="dashed"/>
+
+  <rect x="790" y="500" width="660" height="300" rx="20" class="storage"/>
+  <text x="820" y="540" class="heading">MariaDB 저장소</text>
+
+  <rect x="830" y="575" width="260" height="155" rx="14" class="storage"/>
+  <text x="858" y="615" class="heading">PVC</text>
+  <text x="858" y="652" class="small">mariadb-data</text>
+  <text x="858" y="682" class="small">mariadb-data-mariadb-0</text>
+  <text x="858" y="712" class="small">StatefulSet이 자동 생성</text>
+
+  <rect x="1150" y="575" width="260" height="155" rx="14" class="storage"/>
+  <text x="1178" y="615" class="heading">NFS CSI</text>
+  <text x="1178" y="652" class="small">StorageClass: nfs-csi</text>
+  <text x="1178" y="682" class="small">09번 저장소 실습 재사용</text>
+  <text x="1178" y="712" class="small">NFS Server 필요</text>
+
+  <path d="M1110 652 H1090" class="flow"/>
+  <text x="1085" y="632" text-anchor="end" class="small">PVC 프로비저닝</text>
+
+  <text x="60" y="870" class="heading">실습 검증</text>
+  <text x="60" y="900" class="body">kubectl get deployment,statefulset,pod,service,pvc · 내부 DNS: frontend, fastcgi-backend, mariadb</text>
+</svg>

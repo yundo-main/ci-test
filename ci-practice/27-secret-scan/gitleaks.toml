@@ -1,0 +1,10 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allow documentation placeholders only"
+paths = [
+  '''(?i).*\.md$''',
+  '''(?i).*\.example$'''
+]
+

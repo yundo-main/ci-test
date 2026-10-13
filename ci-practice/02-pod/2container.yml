@@ -1,0 +1,17 @@
+# 가장 단순한 1 Pod·2 Container 예제
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-fastapi-pod
+spec:
+  # 두 컨테이너 이미지 모두 동일한 Docker Hub Pull Secret을 사용한다.
+  imagePullSecrets:
+    - name: jarrod-secret-test
+  containers:
+    - name: nginx
+      # Storage·ConfigMap 이전 단계에서 사용하는 테스트 이미지
+      image: jarrodkim/nginx-test:latest
+    - name: fastapi
+      image: jarrodkim/fastapi-test:latest
+      ports:
+        - containerPort: 8000

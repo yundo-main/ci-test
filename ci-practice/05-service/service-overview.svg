@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="13.333in" height="7.5in" preserveAspectRatio="xMidYMid meet" font-family="'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',Arial,sans-serif">
+  <title>Kubernetes Service 구조</title>
+  <desc>Service가 selector로 Pod를 찾고, Headless Service가 고정 DNS로 StatefulSet Pod를 연결하는 흐름을 보여준다.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#64748b"/></marker>
+    <style>
+      .title{font-size:30px;font-weight:700;fill:#0f172a}.sub{font-size:16px;fill:#475569}.client{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.6}.svc{fill:#dbeafe;stroke:#2563eb;stroke-width:2}.pod{fill:#ecfdf5;stroke:#10b981;stroke-width:1.8}.note{fill:#fff7ed;stroke:#fb923c;stroke-width:1.5}.normal{fill:#f1f5f9;stroke:#94a3b8;stroke-width:1.5}.h{font-size:20px;font-weight:700;fill:#1d4ed8}.g{font-size:20px;font-weight:700;fill:#047857}.o{font-size:18px;font-weight:700;fill:#c2410c}.t{font-size:14px;fill:#1e293b}.n{font-size:13px;fill:#64748b}.edge{stroke:#64748b;stroke-width:2;fill:none;marker-end:url(#arrow)}.dash{stroke:#94a3b8;stroke-width:1.6;stroke-dasharray:7 5;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1280" height="720" fill="#fff"/>
+  <text x="50" y="55" class="title">Kubernetes Service 구조</text>
+  <text x="50" y="84" class="sub">Pod IP는 변경될 수 있으므로 Service가 selector와 DNS를 통해 안정적인 접근점을 제공한다.</text>
+
+  <rect x="45" y="145" width="220" height="130" rx="14" class="client"/>
+  <text x="75" y="190" class="h">클라이언트</text>
+  <text x="75" y="220" class="t">애플리케이션·다른 Pod</text>
+  <text x="75" y="248" class="n">mariadb:3306 호출</text>
+
+  <rect x="350" y="125" width="360" height="205" rx="16" class="svc"/>
+  <text x="385" y="170" class="h">Service: mariadb</text>
+  <text x="385" y="200" class="t">clusterIP: None</text>
+  <text x="385" y="228" class="t">port 3306 → targetPort mysql</text>
+  <text x="385" y="270" class="t">selector: app=mariadb</text>
+  <text x="385" y="300" class="n">Headless Service: 가상 IP 없음</text>
+
+  <rect x="820" y="115" width="375" height="235" rx="16" class="pod"/>
+  <text x="855" y="160" class="g">StatefulSet Pod</text>
+  <text x="855" y="195" class="t">mariadb-0</text>
+  <text x="855" y="225" class="t">label: app=mariadb</text>
+  <text x="855" y="265" class="t">Pod IP는 변경될 수 있음</text>
+  <text x="855" y="295" class="t">고정 DNS: mariadb-0.mariadb</text>
+  <text x="855" y="325" class="n">port: 3306</text>
+
+  <path d="M265 210H340" class="edge"/>
+  <path d="M710 225H810" class="edge"/>
+  <text x="275" y="192" class="n">DNS·Service 이름</text>
+  <text x="722" y="207" class="n">selector 일치</text>
+
+  <rect x="45" y="405" width="555" height="190" rx="16" class="note"/>
+  <text x="80" y="450" class="o">Headless Service의 동작</text>
+  <text x="80" y="485" class="t">• clusterIP: None으로 가상 IP를 만들지 않음</text>
+  <text x="80" y="515" class="t">• 선택된 Pod의 DNS 레코드를 직접 제공</text>
+  <text x="80" y="545" class="t">• StatefulSet 구성원의 고정 DNS 식별에 적합</text>
+  <text x="80" y="575" class="n">예: mariadb-0.mariadb.default.svc.cluster.local</text>
+
+  <rect x="650" y="405" width="545" height="190" rx="16" class="normal"/>
+  <text x="685" y="450" class="h">일반 ClusterIP Service와 비교</text>
+  <text x="685" y="485" class="t">• 하나의 가상 IP로 여러 Pod에 부하분산</text>
+  <text x="685" y="515" class="t">• Pod 개별 주소보다 서비스 접근에 집중</text>
+  <text x="685" y="545" class="t">• 외부 노출은 NodePort·LoadBalancer·Ingress와 조합</text>
+  <text x="685" y="575" class="n">목적에 따라 Headless와 일반 Service를 함께 사용할 수 있음</text>
+
+  <text x="50" y="655" class="n">실습 파일: service.yml · 검증: kubectl get svc,endpoints mariadb</text>
+</svg>

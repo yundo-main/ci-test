@@ -1,0 +1,135 @@
+# Backend 전체 구성: Deployment + FastAPI 소스 ConfigMap + 내부 Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastcgi-backend
+spec:
+  # Backend API를 관리하는 무상태 Deployment다.
+  replicas: 1
+  selector:
+    # Deployment가 관리할 Pod의 label이다.
+    matchLabels:
+      app: fastcgi-backend
+  template:
+    metadata:
+      labels:
+        # Backend Service와 NetworkPolicy가 이 label을 사용할 수 있다.
+        app: fastcgi-backend
+    spec:
+      containers:
+        - name: backend
+          # 실습 편의를 위해 기본 Python 이미지에서 패키지를 설치한다.
+          image: python:3.12-slim
+          workingDir: /app
+          command:
+            # 셸에서 의존성 설치 후 ConfigMap의 main.py를 실행한다.
+            - /bin/sh
+            - -c
+          # 학습용 구성이라 시작 시 패키지를 설치한다. 운영에서는 이미지에 포함한다.
+          args:
+            - >-
+              pip install --no-cache-dir fastapi uvicorn pymysql python-multipart &&
+              uvicorn main:app --host 0.0.0.0 --port 8000
+          env:
+            # 애플리케이션 모듈 이름과 MariaDB 접속 대상을 지정한다.
+            - name: MODULE_NAME
+              value: main
+            - name: DB_HOST
+              # MariaDB Headless Service의 이름으로 클러스터 내부 DNS를 사용한다.
+              value: mariadb
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  # 07번 Secret의 사용자 이름을 환경변수로 주입한다.
+                  name: mariadb-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-secret
+                  key: password
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  # 07번 Secret의 데이터베이스 이름을 환경변수로 주입한다.
+                  name: mariadb-secret
+                  key: database
+          ports:
+            - name: http
+              containerPort: 8000
+          resources:
+            # HPA와 스케줄링 실습에서 사용할 기본 자원 기준이다.
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - name: app-code
+              # ConfigMap의 main.py를 애플리케이션 디렉터리에 마운트한다.
+              mountPath: /app
+      volumes:
+        - name: app-code
+          configMap:
+            # FastAPI 소스(main.py)를 제공하는 ConfigMap이다.
+            name: backend-app
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-app
+# main.py를 수정하면 ConfigMap과 Pod 반영 시점을 별도로 확인해야 한다.
+data:
+  # ConfigMap으로 주입되는 FastAPI 애플리케이션 코드다.
+  main.py: |
+    from fastapi import FastAPI, Form , HTTPException
+    import pymysql
+
+    app = FastAPI()
+
+    @app.post("/api/register")
+    async def register(username: str = Form(...), password: str = Form(...)):
+        # 이 코드는 실습용 예제이며 DB 값은 Secret 환경변수 연동 개선 대상이다.
+        conn = pymysql.connect(
+            host="mariadb",
+            user="fcgiuser",
+            password="fcgipass",
+            database="fcgidb"
+        )
+        with conn.cursor() as cursor:
+            cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, password))
+        conn.commit()
+        return {"message": "가입 완료!"}
+
+    @app.post("/api/login")
+    async def login(username: str = Form(...), password: str = Form(...)):
+        conn = pymysql.connect(
+            host="mariadb",
+            user="fcgiuser",
+            password="fcgipass",
+            database="fcgidb"
+        )
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM users WHERE username=%s AND password=%s", (username, password))
+            result = cursor.fetchone()
+        if result:
+            return {"message": "로그인 성공"}
+        else:
+            raise HTTPException(status_code=401, detail="로그인 실패")
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastcgi-backend
+spec:
+  # Backend는 Ingress와 Frontend가 사용하는 내부 ClusterIP Service다.
+  type: ClusterIP
+  selector:
+    # fastcgi-backend Deployment Pod로 요청을 전달한다.
+    app: fastcgi-backend
+  ports:
+    - name: http
+      port: 8000
+      # Service 요청을 FastAPI 컨테이너의 http 포트로 전달한다.
+      targetPort: http

@@ -1,0 +1,110 @@
+# Database 전체 구성: StatefulSet + PVC + Headless Service
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+  labels:
+    app: mariadb
+spec:
+  # 09번 StatefulSet의 고정 Pod 이름과 Headless Service를 3-Tier에 적용한다.
+  serviceName: mariadb
+  # 실습은 단일 MariaDB Pod로 구성한다. replicas를 늘려도 Pod 이름 규칙은 유지된다.
+  replicas: 1
+  selector:
+    # StatefulSet이 관리할 MariaDB Pod의 label이다.
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        # Headless Service와 PVC 연결 대상 식별에 사용한다.
+        app: mariadb
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: mariadb
+          # 데이터베이스 기본 이미지다.
+          image: mariadb:11
+          env:
+            # MariaDB 초기화에 필요한 값은 07번 Secret에서 읽는다.
+            - name: MARIADB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-secret
+                  # Secret의 root-password 값은 로그나 YAML에 직접 기록하지 않는다.
+                  key: root-password
+            - name: MARIADB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-secret
+                  # 최초 생성할 데이터베이스 이름이다.
+                  key: database
+            - name: MARIADB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-secret
+                  # 애플리케이션이 사용할 일반 DB 사용자다.
+                  key: username
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-secret
+                  # 일반 DB 사용자의 비밀번호다.
+                  key: password
+          ports:
+            - name: mysql
+              containerPort: 3306
+          volumeMounts:
+            - name: mariadb-data
+              # StatefulSet이 생성한 전용 PVC를 데이터 디렉터리에 연결한다.
+              mountPath: /var/lib/mysql
+            - name: mariadb-initdb
+              # 06번 ConfigMap의 SQL을 초기화 스크립트 경로에 연결한다.
+              mountPath: /docker-entrypoint-initdb.d
+          readinessProbe:
+            # MySQL 포트가 열려야 Service Endpoint에 등록한다.
+            tcpSocket:
+              port: mysql
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          livenessProbe:
+            # 실행 중인 MariaDB가 응답하지 않으면 재시작 대상으로 판단한다.
+            tcpSocket:
+              port: mysql
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: mariadb-initdb
+          configMap:
+            # 최초 데이터베이스 초기화 SQL을 제공한다.
+            name: mariadb-initdb
+  volumeClaimTemplates:
+    # StatefulSet이 Pod별로 독립적인 PVC를 자동 생성한다.
+    - metadata:
+        name: mariadb-data
+      spec:
+        # MariaDB Pod 전용으로 읽기·쓰기가 가능한 PVC를 만든다.
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: nfs-csi
+        # nfs-csi StorageClass와 NFS Server가 없으면 PVC가 Bound되지 않는다.
+        resources:
+          requests:
+            # StatefulSet Pod마다 1Gi PVC를 자동 생성한다.
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+spec:
+  # 3-Tier 내부 통신과 mariadb-0.mariadb 고정 DNS를 함께 제공한다.
+  clusterIP: None
+  selector:
+    # app=mariadb Pod를 Endpoint로 등록한다.
+    app: mariadb
+  ports:
+    - name: mysql
+      port: 3306
+      # MariaDB 컨테이너의 mysql 포트로 전달한다.
+      targetPort: mysql

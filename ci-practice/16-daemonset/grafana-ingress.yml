@@ -1,0 +1,20 @@
+# 선택형 외부 노출 예제: NGINX Ingress Controller가 먼저 설치되어 있어야 한다.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-external
+spec:
+  # 설치된 IngressClass 이름과 일치해야 한다.
+  ingressClassName: nginx
+  rules:
+    - host: grafana.example.test
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                # 기본 내부 ClusterIP Service를 Ingress 뒤에 연결한다.
+                name: grafana
+                port:
+                  number: 3000

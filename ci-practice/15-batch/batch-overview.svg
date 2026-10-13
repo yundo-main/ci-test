@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">MariaDB Batch 백업 실습 흐름</title>
+  <desc id="desc">선행 리소스를 확인하고 CronJob에서 즉시 Job을 생성해 MariaDB를 dump한 뒤 NFS PVC의 SQL 파일을 검증하고 리소스를 정리하는 흐름</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fbff"/>
+      <stop offset="1" stop-color="#f1f5f9"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#1f2937" flood-opacity="0.14"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#2563eb"/>
+    </marker>
+    <style>
+      .title { font: 700 30px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #475569; }
+      .section { font: 700 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1e3a8a; }
+      .box-title { font: 700 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0f172a; }
+      .box-text { font: 400 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #334155; }
+      .small { font: 400 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #475569; }
+      .label { font: 600 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1d4ed8; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect x="34" y="28" width="1212" height="664" rx="22" fill="#ffffff" stroke="#dbe7f3" stroke-width="2"/>
+
+  <text x="68" y="78" class="title">15. Batch · MariaDB 백업</text>
+  <text x="68" y="108" class="subtitle">CronJob에서 즉시 Job을 생성하고 NFS PVC의 SQL dump를 검증하는 실습</text>
+
+  <text x="78" y="158" class="section">선행 조건</text>
+  <rect x="78" y="180" width="270" height="142" rx="16" fill="#dbeafe" stroke="#60a5fa" stroke-width="2" filter="url(#shadow)"/>
+  <text x="102" y="216" class="box-title">3-Tier 리소스</text>
+  <text x="102" y="243" class="box-text">mariadb Service</text>
+  <text x="102" y="267" class="box-text">mariadb Pod</text>
+  <text x="102" y="291" class="box-text">mariadb-secret</text>
+
+  <rect x="374" y="180" width="270" height="142" rx="16" fill="#dcfce7" stroke="#4ade80" stroke-width="2" filter="url(#shadow)"/>
+  <text x="398" y="216" class="box-title">저장소 리소스</text>
+  <text x="398" y="243" class="box-text">nfs-test-pvc</text>
+  <text x="398" y="267" class="box-text">상태: Bound</text>
+  <text x="398" y="291" class="box-text">NFS CSI 준비</text>
+
+  <rect x="670" y="180" width="270" height="142" rx="16" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" filter="url(#shadow)"/>
+  <text x="694" y="216" class="box-title">네트워크 조건</text>
+  <text x="694" y="243" class="box-text">NetworkPolicy 적용 시</text>
+  <text x="694" y="267" class="box-text">Backup → MariaDB:3306</text>
+  <text x="694" y="291" class="box-text">접근 허용 필요</text>
+
+  <path d="M940 250 H1004" stroke="#2563eb" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <text x="944" y="234" class="label">apply</text>
+
+  <rect x="1012" y="180" width="202" height="142" rx="16" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1036" y="216" class="box-title">CronJob</text>
+  <text x="1036" y="243" class="box-text">mariadb-backup</text>
+  <text x="1036" y="267" class="box-text">매일 02:00</text>
+  <text x="1036" y="291" class="small">백업 템플릿 등록</text>
+
+  <rect x="78" y="390" width="1136" height="226" rx="18" fill="#f8fafc" stroke="#dbe7f3" stroke-width="2"/>
+  <text x="106" y="428" class="section">즉시 테스트와 결과 검증</text>
+
+  <rect x="106" y="458" width="210" height="112" rx="14" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="128" y="492" class="box-title">1. 즉시 Job 생성</text>
+  <text x="128" y="520" class="box-text">create job --from</text>
+  <text x="128" y="546" class="small">예약 시간 대기 없음</text>
+
+  <path d="M316 514 H362" stroke="#2563eb" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+
+  <rect x="370" y="458" width="210" height="112" rx="14" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="392" y="492" class="box-title">2. dump 실행</text>
+  <text x="392" y="520" class="box-text">mariadb-dump</text>
+  <text x="392" y="546" class="small">mariadb:3306 접속</text>
+
+  <path d="M580 514 H626" stroke="#2563eb" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+
+  <rect x="634" y="458" width="210" height="112" rx="14" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="656" y="492" class="box-title">3. PVC 저장</text>
+  <text x="656" y="520" class="box-text">/backup/*.sql</text>
+  <text x="656" y="546" class="small">nfs-test-pvc</text>
+
+  <path d="M844 514 H890" stroke="#2563eb" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+
+  <rect x="898" y="458" width="142" height="112" rx="14" fill="#dcfce7" stroke="#4ade80"/>
+  <text x="918" y="492" class="box-title">4. 검증</text>
+  <text x="918" y="520" class="box-text">Job 완료</text>
+  <text x="918" y="546" class="small">로그·파일</text>
+
+  <path d="M1040 514 H1086" stroke="#64748b" stroke-width="3" stroke-dasharray="8 7" fill="none" marker-end="url(#arrow)"/>
+
+  <rect x="1094" y="458" width="92" height="112" rx="14" fill="#fff7ed" stroke="#fdba74"/>
+  <text x="1112" y="492" class="box-title">5.</text>
+  <text x="1112" y="520" class="box-text">정리</text>
+  <text x="1112" y="546" class="small">Job/CronJob</text>
+
+  <text x="78" y="660" class="small">정상 기준: Job 1/1 완료 · 로그 오류 없음 · NFS PVC에 timestamp가 포함된 .sql 파일 생성</text>
+</svg>

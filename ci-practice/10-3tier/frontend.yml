@@ -1,0 +1,90 @@
+# Frontend 전체 구성: Deployment + HTML ConfigMap + 내부 Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  # Frontend Pod를 1개 실행하는 무상태 워크로드다.
+  replicas: 1
+  selector:
+    # 이 selector와 Pod template의 label이 일치해야 Deployment가 Pod를 관리한다.
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        # frontend Service도 같은 label을 기준으로 Pod를 찾는다.
+        app: frontend
+    spec:
+      containers:
+        - name: nginx
+          # 기본 Nginx 이미지에 아래 ConfigMap의 HTML을 주입한다.
+          image: nginx:stable
+          ports:
+            - name: http
+              containerPort: 80
+          volumeMounts:
+            - name: html-volume
+              # Nginx 기본 문서 경로에 HTML 파일을 마운트한다.
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: html-volume
+          configMap:
+            # login.html과 register.html을 제공하는 ConfigMap이다.
+            name: frontend-html
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-html
+# HTML 파일은 별도 이미지 빌드 없이 ConfigMap으로 Pod에 전달한다.
+data:
+  # 로그인 화면을 /usr/share/nginx/html/login.html로 제공한다.
+  login.html: |
+    <!DOCTYPE html>
+    <html lang="ko">
+    <meta charset="UTF-8">
+    <head>
+    <title>로그인</title> </head>
+    <body>
+    <h2>로그인</h2>
+    <form method="POST" action="/api/login">
+    <label for="username">아이디:</label><br>
+    <input type="text" id="username" name="username" required><br><br>
+    <label for="password">비밀번호:</label><br>
+    <input type="password" id="password" name="password" required><br><br>
+    <button type="submit">로그인</button>
+    </form>
+    </body>
+    </html>
+  # 회원가입 화면을 /usr/share/nginx/html/register.html로 제공한다.
+  register.html: |
+    <!DOCTYPE html>
+    <html>
+    <meta charset="UTF-8">
+    <head><title>회원가입</title></head>
+    <body>
+      <h2>회원가입</h2>
+      <form method="POST" action="/api/register">
+        <label>아이디: <input type="text" name="username" /></label><br>
+        <label>비밀번호: <input type="password" name="password" /></label><br>
+        <button type="submit">가입</button>
+      </form>
+    </body>
+    </html>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  # 외부에 직접 노출하지 않고 ClusterIP로 클러스터 내부에서만 접근한다.
+  type: ClusterIP
+  selector:
+    # frontend label을 가진 Pod로 요청을 전달한다.
+    app: frontend
+  ports:
+    - name: http
+      port: 80
+      # Service 요청을 Nginx 컨테이너의 http 포트로 전달한다.
+      targetPort: http

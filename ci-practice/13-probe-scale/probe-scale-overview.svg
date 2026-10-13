@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="900" viewBox="0 0 1500 900" role="img" aria-labelledby="title desc">
+  <title id="title">Backend Probe와 Scale 실습 구조</title>
+  <desc id="desc">fastcgi-backend Deployment에 Startup, Readiness, Liveness Probe를 적용하고 Metrics Server 기반 HPA, PodDisruptionBudget, PriorityClass가 Pod 운영에 미치는 관계를 보여준다.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #0f172a; }
+      .heading { font: 700 20px Arial, sans-serif; fill: #0f172a; }
+      .body { font: 16px Arial, sans-serif; fill: #334155; }
+      .small { font: 14px Arial, sans-serif; fill: #475569; }
+      .deployment { fill: #eff6ff; stroke: #3b82f6; stroke-width: 2; }
+      .pod { fill: #ecfdf5; stroke: #10b981; stroke-width: 2; }
+      .probe { fill: #fefce8; stroke: #ca8a04; stroke-width: 2; }
+      .scale { fill: #f5f3ff; stroke: #8b5cf6; stroke-width: 2; }
+      .protect { fill: #fff7ed; stroke: #f97316; stroke-width: 2; }
+      .schedule { fill: #fef2f2; stroke: #ef4444; stroke-width: 2; }
+      .flow { stroke: #475569; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+      .dashed { stroke: #64748b; stroke-width: 2; fill: none; stroke-dasharray: 7 6; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1500" height="900" fill="#f8fafc"/>
+  <text x="60" y="55" class="title">13단계: Backend 운영 안정성과 자동 확장</text>
+  <text x="60" y="86" class="body">기준 manifest: k8s/practice-order/13-probe-scale/</text>
+
+  <rect x="60" y="130" width="390" height="230" rx="16" class="deployment"/>
+  <text x="92" y="175" class="heading">Deployment</text>
+  <text x="92" y="215" class="body">fastcgi-backend</text>
+  <text x="92" y="255" class="small">resources.requests: 100m CPU</text>
+  <text x="92" y="285" class="small">resources.limits: 500m CPU</text>
+  <text x="92" y="325" class="small">replicas: 1 → HPA가 조정</text>
+  <path d="M450 245 H550" class="flow"/>
+
+  <rect x="550" y="130" width="390" height="230" rx="16" class="probe"/>
+  <text x="582" y="175" class="heading">Probe</text>
+  <text x="582" y="215" class="body">Pod 상태 확인</text>
+  <text x="582" y="255" class="small">Startup: /docs · 초기 기동 대기</text>
+  <text x="582" y="285" class="small">Readiness: /docs · 트래픽 수신 여부</text>
+  <text x="582" y="315" class="small">Liveness: TCP 8000 · 재시작 판단</text>
+  <path d="M940 245 H1040" class="flow"/>
+
+  <rect x="1040" y="130" width="390" height="230" rx="16" class="scale"/>
+  <text x="1072" y="175" class="heading">HorizontalPodAutoscaler</text>
+  <text x="1072" y="215" class="body">fastcgi-backend-hpa</text>
+  <text x="1072" y="255" class="small">CPU 평균 60% 기준</text>
+  <text x="1072" y="285" class="small">minReplicas: 1</text>
+  <text x="1072" y="315" class="small">maxReplicas: 3</text>
+
+  <rect x="250" y="465" width="390" height="220" rx="16" class="pod"/>
+  <text x="282" y="510" class="heading">Backend Pod</text>
+  <text x="282" y="550" class="body">python:3.12-slim</text>
+  <text x="282" y="590" class="small">ConfigMap: backend-app</text>
+  <text x="282" y="620" class="small">Service: fastcgi-backend:8000</text>
+  <text x="282" y="655" class="small">Ready Pod만 Service가 선택</text>
+
+  <rect x="730" y="465" width="390" height="220" rx="16" class="protect"/>
+  <text x="762" y="510" class="heading">PodDisruptionBudget</text>
+  <text x="762" y="550" class="body">fastcgi-backend-pdb</text>
+  <text x="762" y="590" class="small">minAvailable: 1</text>
+  <text x="762" y="620" class="small">자발적 중단 시 최소 Pod 유지</text>
+  <text x="762" y="655" class="small">노드 Drain 안전성 향상</text>
+
+  <rect x="1210" y="465" width="230" height="220" rx="16" class="schedule"/>
+  <text x="1240" y="510" class="heading">PriorityClass</text>
+  <text x="1240" y="550" class="body">fastcgi-backend-high</text>
+  <text x="1240" y="590" class="small">value: 1000000</text>
+  <text x="1240" y="620" class="small">스케줄링 우선순위</text>
+  <text x="1240" y="655" class="small">자원 부족 시 선점</text>
+
+  <path d="M745 360 V425 H445 V465" class="dashed"/>
+  <text x="480" y="410" class="small">상태 검사</text>
+  <path d="M1235 360 V420 H445 V465" class="dashed"/>
+  <text x="1010" y="405" class="small">replicas 조정</text>
+  <path d="M640 575 H730" class="dashed"/>
+  <text x="650" y="555" class="small">중단 보호</text>
+  <path d="M1120 575 H1210" class="dashed"/>
+  <text x="1135" y="555" class="small">스케줄링</text>
+
+  <text x="60" y="770" class="heading">실습 확인</text>
+  <text x="60" y="810" class="body">kubectl get pod,hpa,pdb,priorityclass</text>
+  <text x="60" y="845" class="body">kubectl top pods · kubectl describe hpa fastcgi-backend-hpa</text>
+</svg>

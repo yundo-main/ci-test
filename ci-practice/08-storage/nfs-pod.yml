@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nfs-server
+  labels:
+    app: nfs-server
+spec:
+  nodeSelector:
+    kubernetes.io/os: linux
+  containers:
+    - name: nfs-server
+      image: andrewkidd/nfs-server:v2.2.7
+      imagePullPolicy: IfNotPresent
+      env:
+        # ARM64·AMD64를 지원하는 NFS 서버 이미지의 export 설정
+        - name: NFS_VERSION
+          value: "4"
+        - name: NFS_EXPORT_0
+          value: "/mnt/nfsshare *(rw,fsid=0,async,no_subtree_check,no_auth_nlm,insecure,no_root_squash)"
+      securityContext:
+        privileged: true
+      ports:
+        - name: nfs
+          containerPort: 2049
+          protocol: TCP
+        - name: rpcbind
+          containerPort: 111
+          protocol: TCP
+        - name: rpcbind-udp
+          containerPort: 111
+          protocol: UDP
+        - name: mountd
+          containerPort: 32767
+          protocol: TCP
+        - name: mountd-udp
+          containerPort: 32767
+          protocol: UDP
+        - name: statd
+          containerPort: 32765
+          protocol: TCP
+        - name: statd-udp
+          containerPort: 32765
+          protocol: UDP
+      volumeMounts:
+        - name: nfs-data
+          mountPath: /mnt/nfsshare
+  volumes:
+    - name: nfs-data
+      hostPath:
+        path: /nfs-vol
+        type: DirectoryOrCreate

@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
+  <title id="title">nginx ReplicaSet 구조와 복제본 유지</title>
+  <desc id="desc">nginx.yml에 정의된 ReplicaSet이 nginx:latest Pod 3개를 생성하고 원하는 복제본 수를 유지하는 흐름을 보여준다.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #0f172a; }
+      .heading { font: 700 20px Arial, sans-serif; fill: #0f172a; }
+      .body { font: 16px Arial, sans-serif; fill: #334155; }
+      .small { font: 14px Arial, sans-serif; fill: #475569; }
+      .box { fill: #ffffff; stroke: #94a3b8; stroke-width: 2; }
+      .rs { fill: #eff6ff; stroke: #3b82f6; stroke-width: 2; }
+      .pod { fill: #ecfdf5; stroke: #10b981; stroke-width: 2; }
+      .rule { fill: #fff7ed; stroke: #f97316; stroke-width: 2; }
+      .line { stroke: #475569; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+      .dashed { stroke: #64748b; stroke-width: 2; fill: none; stroke-dasharray: 7 6; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1400" height="820" fill="#f8fafc"/>
+  <text x="60" y="58" class="title">ReplicaSet: nginx Pod 여러 개 유지</text>
+  <text x="60" y="88" class="body">기준 manifest: k8s/practice-order/03-replicaset/nginx.yml</text>
+
+  <rect x="60" y="130" width="390" height="300" rx="18" class="rs"/>
+  <text x="90" y="174" class="heading">ReplicaSet</text>
+  <text x="90" y="207" class="body">이름: nginx-replicaset</text>
+  <text x="90" y="240" class="body">replicas: 3</text>
+  <text x="90" y="282" class="small">selector.matchLabels</text>
+  <text x="90" y="308" class="body">app = nginx-replicaset</text>
+  <text x="90" y="356" class="small">원하는 Pod 수와 현재 Pod 수를 비교</text>
+  <text x="90" y="382" class="small">부족하면 새 Pod를 생성</text>
+
+  <path d="M450 280 H530" class="line"/>
+  <text x="463" y="258" class="small">Pod template</text>
+
+  <rect x="530" y="130" width="390" height="300" rx="18" class="rule"/>
+  <text x="560" y="174" class="heading">Pod template</text>
+  <text x="560" y="212" class="body">label: app=nginx-replicaset</text>
+  <text x="560" y="250" class="body">container: nginx</text>
+  <text x="560" y="286" class="body">image: nginx:latest</text>
+  <text x="560" y="322" class="body">containerPort: 80</text>
+  <text x="560" y="372" class="small">label이 selector와 일치해야</text>
+  <text x="560" y="398" class="small">ReplicaSet이 Pod를 관리한다.</text>
+
+  <path d="M920 280 H1000" class="line"/>
+  <text x="934" y="258" class="small">replicas: 3</text>
+
+  <rect x="1000" y="130" width="340" height="300" rx="18" class="box"/>
+  <text x="1030" y="174" class="heading">실행 중인 Pod</text>
+  <rect x="1030" y="205" width="280" height="52" rx="10" class="pod"/>
+  <text x="1052" y="238" class="body">nginx Pod 1</text>
+  <rect x="1030" y="274" width="280" height="52" rx="10" class="pod"/>
+  <text x="1052" y="307" class="body">nginx Pod 2</text>
+  <rect x="1030" y="343" width="280" height="52" rx="10" class="pod"/>
+  <text x="1052" y="376" class="body">nginx Pod 3</text>
+  <text x="1030" y="418" class="small">각 Pod는 nginx:latest를 실행</text>
+
+  <text x="60" y="510" class="heading">복제본 유지 흐름</text>
+  <rect x="60" y="550" width="270" height="100" rx="14" class="box"/>
+  <text x="90" y="590" class="heading">Pod 삭제 또는 장애</text>
+  <text x="90" y="620" class="small">현재 복제본 수가 3보다 작아짐</text>
+  <path d="M330 600 H430" class="dashed"/>
+  <rect x="430" y="550" width="300" height="100" rx="14" class="rs"/>
+  <text x="460" y="590" class="heading">ReplicaSet 감지</text>
+  <text x="460" y="620" class="small">selector로 관리 대상 확인</text>
+  <path d="M730 600 H830" class="dashed"/>
+  <rect x="830" y="550" width="300" height="100" rx="14" class="pod"/>
+  <text x="860" y="590" class="heading">새 nginx Pod 생성</text>
+  <text x="860" y="620" class="small">replicas: 3으로 복구</text>
+  <path d="M1130 650 C1130 710 195 710 195 650" class="dashed"/>
+  <text x="60" y="750" class="small">ReplicaSet은 Pod의 개수를 유지하지만 롤링 업데이트는 제공하지 않는다. 운영 배포에는 Deployment를 권장한다.</text>
+</svg>

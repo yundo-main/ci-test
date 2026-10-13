@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="13.333in" height="7.5in" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="title desc">
+  <title id="title">nginx Deployment 기본 구조</title>
+  <desc id="desc">nginx.yml에 정의된 Deployment가 ReplicaSet을 관리하고 nginx Pod 3개를 유지하는 기본 구조와 스케일링 흐름을 보여준다.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #0f172a; }
+      .heading { font: 700 20px Arial, sans-serif; fill: #0f172a; }
+      .body { font: 16px Arial, sans-serif; fill: #334155; }
+      .small { font: 14px Arial, sans-serif; fill: #475569; }
+      .box { fill: #ffffff; stroke: #94a3b8; stroke-width: 2; }
+      .deployment { fill: #f5f3ff; stroke: #8b5cf6; stroke-width: 2; }
+      .rs { fill: #eff6ff; stroke: #3b82f6; stroke-width: 2; }
+      .pod { fill: #ecfdf5; stroke: #10b981; stroke-width: 2; }
+      .flow { stroke: #475569; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1280" height="720" fill="#f8fafc"/>
+  <g transform="scale(0.9)">
+  <text x="60" y="58" class="title">Deployment: nginx 기본 구조</text>
+  <text x="60" y="88" class="body">기준 manifest: k8s/practice-order/04-deployment/nginx.yml</text>
+
+  <rect x="60" y="135" width="350" height="285" rx="18" class="deployment"/>
+  <text x="90" y="180" class="heading">Deployment</text>
+  <text x="90" y="215" class="body">nginx-deployment</text>
+  <text x="90" y="255" class="body">replicas: 3</text>
+  <text x="90" y="295" class="small">Pod template 정의</text>
+  <text x="90" y="322" class="small">selector: app=nginx-deployment</text>
+  <text x="90" y="349" class="small">replicas: 3</text>
+  <text x="90" y="390" class="small">배포·스케일링·롤백을 관리</text>
+
+  <path d="M410 278 H505" class="flow"/>
+  <text x="424" y="255" class="small">생성·관리</text>
+
+  <rect x="505" y="135" width="350" height="285" rx="18" class="rs"/>
+  <text x="535" y="180" class="heading">ReplicaSet</text>
+  <text x="535" y="218" class="body">현재 배포 버전 유지</text>
+  <text x="535" y="260" class="small">selector와 Pod label 일치</text>
+  <text x="535" y="300" class="small">원하는 Pod 수: 3</text>
+  <text x="535" y="340" class="small">Pod template과 label 일치</text>
+  <text x="535" y="380" class="small">replicas 수에 맞춰 Pod 유지</text>
+
+  <path d="M856 278 H950" class="flow"/>
+  <text x="872" y="255" class="small">생성·유지</text>
+
+  <rect x="950" y="135" width="390" height="285" rx="18" class="box"/>
+  <text x="980" y="180" class="heading">nginx Pods</text>
+  <rect x="980" y="210" width="330" height="48" rx="10" class="pod"/>
+  <text x="1005" y="241" class="body">nginx Pod 1</text>
+  <rect x="980" y="273" width="330" height="48" rx="10" class="pod"/>
+  <text x="1005" y="304" class="body">nginx Pod 2</text>
+  <rect x="980" y="336" width="330" height="48" rx="10" class="pod"/>
+  <text x="1005" y="367" class="body">nginx Pod 3</text>
+  <text x="980" y="408" class="small">jarrodkim/nginx-test:latest · HTTP :80</text>
+
+  <text x="60" y="500" class="heading">기본 실습 흐름</text>
+  <rect x="60" y="545" width="260" height="105" rx="14" class="box"/>
+  <text x="90" y="585" class="heading">Apply</text>
+  <text x="90" y="617" class="small">Deployment 생성 또는 변경</text>
+  <path d="M320 598 H410" class="flow"/>
+  <rect x="410" y="545" width="260" height="105" rx="14" class="deployment"/>
+  <text x="440" y="585" class="heading">Observe</text>
+  <text x="440" y="617" class="small">Deployment·ReplicaSet 확인</text>
+  <path d="M670 598 H760" class="flow"/>
+  <rect x="760" y="545" width="260" height="105" rx="14" class="pod"/>
+  <text x="790" y="585" class="heading">Scale</text>
+  <text x="790" y="617" class="small">replicas 수 변경</text>
+  <path d="M1020 598 H1110" class="flow"/>
+  <rect x="1110" y="545" width="230" height="105" rx="14" class="rs"/>
+  <text x="1140" y="585" class="heading">Verify</text>
+  <text x="1140" y="617" class="small">Pod 수와 상태 확인</text>
+  <text x="60" y="730" class="small">Rolling Update와 롤백은 practice-order/24-rollout에서 별도로 실습한다.</text>
+  </g>
+</svg>

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-replicaset
+  labels:
+    app: nginx-replicaset
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-replicaset
+  template:
+    metadata:
+      labels:
+        app: nginx-replicaset
+    spec:
+      containers:
+        - name: nginx
+          image: jarrodkim/nginx-test:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80

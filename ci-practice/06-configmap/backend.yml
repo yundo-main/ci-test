@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-app
+data:
+  main.py: |
+    from fastapi import FastAPI, Form , HTTPException
+    import pymysql
+
+    app = FastAPI()
+
+    @app.post("/api/register")
+    async def register(username: str = Form(...), password: str = Form(...)):
+        conn = pymysql.connect(
+            host="mariadb",
+            user="fcgiuser",
+            password="fcgipass",
+            database="fcgidb"
+        )
+        with conn.cursor() as cursor:
+            cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, password))
+        conn.commit()
+        return {"message": "가입 완료!"}
+
+    @app.post("/api/login")
+    async def login(username: str = Form(...), password: str = Form(...)):
+        conn = pymysql.connect(
+            host="mariadb",
+            user="fcgiuser",
+            password="fcgipass",
+            database="fcgidb"
+        )
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM users WHERE username=%s AND password=%s", (username, password))
+            result = cursor.fetchone()
+        if result:
+            return {"message": "로그인 성공"}
+        else:
+            raise HTTPException(status_code=401, detail="로그인 실패")

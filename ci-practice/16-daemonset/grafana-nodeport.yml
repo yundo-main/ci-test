@@ -1,0 +1,15 @@
+# 선택형 외부 노출 예제: 기본 grafana ClusterIP Service와 분리한다.
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-nodeport
+spec:
+  # 노드 IP의 30000 포트로 Grafana를 테스트 노출한다.
+  type: NodePort
+  selector:
+    app: grafana
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+      nodePort: 30000

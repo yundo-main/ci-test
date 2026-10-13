@@ -1,0 +1,8 @@
+apiVersion: example.com/v1alpha1
+kind: ThreeTierBackup
+metadata:
+  name: mariadb-backup-policy
+spec:
+  databaseService: mariadb
+  backupPvc: nfs-test-pvc
+  retentionDays: 7

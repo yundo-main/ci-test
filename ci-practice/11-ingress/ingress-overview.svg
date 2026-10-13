@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
+  <title id="title">Ingress Controller 설치와 3-Tier 외부 라우팅</title>
+  <desc id="desc">Ingress Controller 설치 후 세 노드의 NodePort로 들어온 외부 요청이 IngressClass와 fastapi-ingress 규칙을 거쳐 Frontend 또는 Backend Service로 전달되는 흐름을 보여준다.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #0f172a; }
+      .heading { font: 700 20px Arial, sans-serif; fill: #0f172a; }
+      .body { font: 16px Arial, sans-serif; fill: #334155; }
+      .small { font: 14px Arial, sans-serif; fill: #475569; }
+      .external { fill: #fef2f2; stroke: #ef4444; stroke-width: 2; }
+      .controller { fill: #f5f3ff; stroke: #8b5cf6; stroke-width: 2; }
+      .rule { fill: #eff6ff; stroke: #3b82f6; stroke-width: 2; }
+      .service { fill: #ecfdf5; stroke: #10b981; stroke-width: 2; }
+      .pod { fill: #fff7ed; stroke: #f97316; stroke-width: 2; }
+      .flow { stroke: #475569; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+      .dashed { stroke: #64748b; stroke-width: 2; fill: none; stroke-dasharray: 7 6; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1400" height="820" fill="#f8fafc"/>
+  <text x="60" y="55" class="title">Ingress Controller 설치 → 3-Tier 외부 라우팅</text>
+  <text x="60" y="86" class="body">설치: install/playbooks/addons/ingress-nginx.yml · 운영: operations/07-addons/ingress</text>
+
+  <rect x="60" y="135" width="270" height="210" rx="16" class="external"/>
+  <text x="92" y="180" class="heading">외부 클라이언트</text>
+  <text x="92" y="220" class="body">브라우저 · API Client</text>
+  <text x="92" y="260" class="small">10.10.10.150~152</text>
+  <text x="92" y="290" class="small">NodePort: 30198</text>
+  <text x="92" y="320" class="small">HTTPS: 미적용</text>
+  <path d="M330 240 H450" class="flow"/>
+
+  <rect x="450" y="135" width="360" height="210" rx="16" class="controller"/>
+  <text x="485" y="180" class="heading">Ingress Controller</text>
+  <text x="485" y="220" class="body">설치: ingress-nginx v1.15.1</text>
+  <text x="485" y="260" class="small">HTTP NodePort: 30198</text>
+  <text x="485" y="290" class="small">Pod: ingress-nginx-controller</text>
+  <text x="485" y="320" class="small">외부 요청 수신·전달</text>
+  <path d="M810 240 H930" class="flow"/>
+
+  <rect x="930" y="135" width="400" height="210" rx="16" class="rule"/>
+  <text x="965" y="180" class="heading">IngressClass + Ingress</text>
+  <text x="965" y="225" class="body">nginx · fastapi-ingress</text>
+  <text x="965" y="265" class="small">/       → frontend:80</text>
+  <text x="965" y="300" class="small">/api/ → fastcgi-backend:8000</text>
+  <text x="965" y="330" class="small">Service 이름과 포트로 전달</text>
+
+  <path d="M1130 345 V430" class="flow"/>
+  <text x="1150" y="390" class="small">/</text>
+  <path d="M1080 345 V390 H590 V430" class="flow"/>
+  <text x="850" y="380" class="small">/api/</text>
+
+  <rect x="170" y="430" width="400" height="190" rx="16" class="service"/>
+  <text x="205" y="475" class="heading">Frontend Service</text>
+  <text x="205" y="515" class="body">frontend:80</text>
+  <text x="205" y="555" class="small">ClusterIP</text>
+  <text x="205" y="585" class="small">→ nginx Pod · 정적 HTML</text>
+
+  <rect x="760" y="430" width="400" height="190" rx="16" class="service"/>
+  <text x="795" y="475" class="heading">Backend Service</text>
+  <text x="795" y="515" class="body">fastcgi-backend:8000</text>
+  <text x="795" y="555" class="small">ClusterIP</text>
+  <text x="795" y="585" class="small">→ FastAPI Pod · API 처리</text>
+
+  <rect x="170" y="675" width="400" height="95" rx="14" class="pod"/>
+  <text x="205" y="715" class="heading">Frontend Pod</text>
+  <text x="205" y="748" class="small">nginx:stable + frontend-html</text>
+
+  <rect x="760" y="675" width="400" height="95" rx="14" class="pod"/>
+  <text x="795" y="715" class="heading">Backend Pod</text>
+  <text x="795" y="748" class="small">python:3.12-slim + backend-app</text>
+
+  <path d="M370 620 V675" class="dashed"/>
+  <path d="M960 620 V675" class="dashed"/>
+</svg>

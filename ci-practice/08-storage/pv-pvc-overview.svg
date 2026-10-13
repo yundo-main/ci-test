@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="800" viewBox="0 0 1400 800" role="img" aria-labelledby="title desc">
+  <title id="title">PersistentVolume과 PersistentVolumeClaim 관계</title>
+  <desc id="desc">애플리케이션의 PVC 요청이 조건에 맞는 PV와 바인딩되고 Pod에 마운트되는 흐름을 보여준다.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #0f172a; }
+      .heading { font: 700 20px Arial, sans-serif; fill: #0f172a; }
+      .body { font: 16px Arial, sans-serif; fill: #334155; }
+      .small { font: 14px Arial, sans-serif; fill: #475569; }
+      .request { fill: #eff6ff; stroke: #3b82f6; stroke-width: 2; }
+      .binding { fill: #f5f3ff; stroke: #8b5cf6; stroke-width: 2; }
+      .volume { fill: #fff7ed; stroke: #f97316; stroke-width: 2; }
+      .pod { fill: #ecfdf5; stroke: #10b981; stroke-width: 2; }
+      .note { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; }
+      .flow { stroke: #475569; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+      .dashed { stroke: #64748b; stroke-width: 2; fill: none; stroke-dasharray: 7 6; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1400" height="800" fill="#f8fafc"/>
+  <text x="60" y="58" class="title">PV와 PVC: 스토리지 요청과 실제 볼륨의 연결</text>
+  <text x="60" y="88" class="body">기준 실습: k8s/practice-order/08-storage/</text>
+
+  <rect x="60" y="145" width="300" height="210" rx="16" class="request"/>
+  <text x="92" y="190" class="heading">PVC</text>
+  <text x="92" y="230" class="body">애플리케이션의 저장소 요청</text>
+  <text x="92" y="270" class="small">요청 용량: 1Gi</text>
+  <text x="92" y="300" class="small">접근 모드: ReadWriteMany</text>
+  <text x="92" y="330" class="small">StorageClass: nfs-csi</text>
+  <path d="M360 250 H490" class="flow"/>
+
+  <rect x="490" y="145" width="330" height="210" rx="16" class="binding"/>
+  <text x="522" y="190" class="heading">바인딩</text>
+  <text x="522" y="230" class="body">조건이 맞는 PV를 선택</text>
+  <text x="522" y="270" class="small">용량 · 접근 모드 · StorageClass</text>
+  <text x="522" y="310" class="small">PVC 상태: Pending → Bound</text>
+  <path d="M820 250 H950" class="flow"/>
+
+  <rect x="950" y="145" width="330" height="210" rx="16" class="volume"/>
+  <text x="982" y="190" class="heading">PV</text>
+  <text x="982" y="230" class="body">클러스터가 사용할 실제 볼륨</text>
+  <text x="982" y="270" class="small">프로비저너: NFS CSI Driver</text>
+  <text x="982" y="310" class="small">상태: Available → Bound</text>
+
+  <rect x="280" y="450" width="360" height="190" rx="16" class="pod"/>
+  <text x="316" y="495" class="heading">Pod</text>
+  <text x="316" y="535" class="body">PVC를 volume으로 참조</text>
+  <text x="316" y="575" class="small">/data 경로에 볼륨 마운트</text>
+  <text x="316" y="610" class="small">애플리케이션이 파일을 읽고 씀</text>
+  <path d="M460 450 V355" class="dashed"/>
+
+  <rect x="760" y="450" width="360" height="190" rx="16" class="note"/>
+  <text x="796" y="495" class="heading">데이터 생명주기</text>
+  <text x="796" y="535" class="body">Pod 삭제와 볼륨은 별도 관리</text>
+  <text x="796" y="575" class="small">PVC가 남아 있으면 데이터 유지</text>
+  <text x="796" y="610" class="small">PVC 삭제 정책에 따라 PV 처리</text>
+  <path d="M1120 450 V355" class="dashed"/>
+
+  <text x="60" y="715" class="heading">실습 확인</text>
+  <text x="60" y="750" class="body">kubectl get pv,pvc,pod,storageclass</text>
+</svg>

@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="13.333in" height="7.5in" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="title desc">
+  <title id="title">MariaDB StatefulSet 실습 구조</title>
+  <desc id="desc">StatefulSet 디렉터리에 분리된 Secret, ConfigMap, Headless Service, StatefulSet과 Pod별 PersistentVolumeClaim의 관계를 보여준다.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #0f172a; }
+      .heading { font: 700 20px Arial, sans-serif; fill: #0f172a; }
+      .body { font: 16px Arial, sans-serif; fill: #334155; }
+      .small { font: 14px Arial, sans-serif; fill: #475569; }
+      .box { fill: #ffffff; stroke: #94a3b8; stroke-width: 2; }
+      .stateful { fill: #eff6ff; stroke: #3b82f6; stroke-width: 2; }
+      .storage { fill: #fff7ed; stroke: #f97316; stroke-width: 2; }
+      .config { fill: #f5f3ff; stroke: #8b5cf6; stroke-width: 2; }
+      .pod { fill: #ecfdf5; stroke: #10b981; stroke-width: 2; }
+      .flow { stroke: #475569; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+      .dashed { stroke: #64748b; stroke-width: 2; fill: none; stroke-dasharray: 7 6; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1280" height="720" fill="#f8fafc"/>
+  <g transform="scale(0.9)">
+  <text x="60" y="58" class="title">MariaDB StatefulSet: 고정 식별자와 영구 저장소</text>
+  <text x="60" y="88" class="body">기준 manifest: k8s/practice-order/09-statefulset/</text>
+
+  <rect x="60" y="130" width="270" height="170" rx="16" class="config"/>
+  <text x="88" y="172" class="heading">Secret</text>
+  <text x="88" y="210" class="body">mariadb-secret</text>
+  <text x="88" y="245" class="small">root/database/user/password</text>
+  <path d="M330 215 H410" class="flow"/>
+
+  <rect x="60" y="340" width="270" height="170" rx="16" class="config"/>
+  <text x="88" y="382" class="heading">ConfigMap</text>
+  <text x="88" y="420" class="body">mariadb-initdb</text>
+  <text x="88" y="455" class="small">/docker-entrypoint-initdb.d</text>
+  <path d="M330 425 H410" class="flow"/>
+
+  <rect x="410" y="130" width="390" height="380" rx="18" class="stateful"/>
+  <text x="442" y="174" class="heading">StatefulSet: mariadb</text>
+  <text x="442" y="212" class="body">replicas: 1</text>
+  <text x="442" y="250" class="small">serviceName: mariadb</text>
+  <text x="442" y="288" class="small">Pod 이름: mariadb-0</text>
+  <text x="442" y="326" class="small">DNS: mariadb-0.mariadb</text>
+  <text x="442" y="364" class="small">1개 Pod에도 고정 식별자 부여</text>
+  <text x="442" y="364" class="small">고유한 PVC를 Pod별로 생성</text>
+  <text x="442" y="414" class="body">env: Secret 참조</text>
+  <text x="442" y="450" class="body">init.sql: ConfigMap 마운트</text>
+  <path d="M800 320 H880" class="flow"/>
+
+  <rect x="880" y="110" width="270" height="220" rx="16" class="box"/>
+  <text x="910" y="152" class="heading">Headless Service</text>
+  <text x="910" y="190" class="body">mariadb</text>
+  <text x="910" y="225" class="small">clusterIP: None</text>
+  <text x="910" y="252" class="small">selector: app=mariadb</text>
+  <text x="910" y="279" class="small">DNS: mariadb-0.mariadb</text>
+  <text x="910" y="306" class="small">port: 3306</text>
+
+  <rect x="880" y="360" width="270" height="170" rx="16" class="pod"/>
+  <text x="910" y="402" class="heading">MariaDB Pod</text>
+  <text x="910" y="440" class="body">mariadb-0</text>
+  <text x="910" y="475" class="small">mariadb:11 · MySQL :3306</text>
+  <path d="M1015 330 V360" class="flow"/>
+
+  <rect x="1190" y="130" width="160" height="380" rx="16" class="storage"/>
+  <text x="1215" y="172" class="heading">PVC</text>
+  <text x="1215" y="212" class="small">mariadb-data-</text>
+  <text x="1215" y="237" class="small">mariadb-0</text>
+  <path d="M1150 445 H1190" class="dashed"/>
+  <text x="1215" y="300" class="small">1Gi</text>
+  <text x="1215" y="335" class="small">RWO</text>
+  <text x="1215" y="390" class="small">Pod가 재생성되어도</text>
+  <text x="1215" y="416" class="small">데이터를 유지</text>
+
+  <text x="60" y="600" class="heading">실습 확인</text>
+  <text x="60" y="640" class="body">kubectl get statefulset,pod,pvc,service,endpoints mariadb</text>
+  <text x="60" y="675" class="body">kubectl run dns-test --rm -it --restart=Never --image=busybox:1.36 -- nslookup mariadb-0.mariadb</text>
+  <text x="60" y="710" class="small">장점: Pod IP가 바뀌어도 mariadb-0.mariadb로 접근하고, replicas 증가 시 같은 규칙을 유지한다.</text>
+  <text x="60" y="740" class="small">한계: Headless Service만으로 MariaDB 복제·고가용성·자동 장애 전환이 제공되지는 않는다.</text>
+  <text x="800" y="560" class="heading">워크로드 선택</text>
+  <text x="800" y="590" class="small">StatefulSet: 고정 이름·순서·Pod별 PVC가 필요한 상태 저장 앱</text>
+  <text x="800" y="620" class="small">Deployment: Pod가 교체되어도 동일하게 동작하는 무상태 앱</text>
+  <text x="800" y="650" class="small">예: MariaDB·Redis ↔ Nginx·FastAPI·Frontend</text>
+  </g>
+</svg>

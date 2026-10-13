@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mariadb-backup
+spec:
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          # 12번 NetworkPolicy가 MariaDB 접근을 허용할 수 있도록 식별한다.
+          labels:
+            app: mariadb-backup
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: mariadb:11
+              env:
+                - name: MARIADB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: mariadb-secret
+                      key: username
+                - name: MARIADB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: mariadb-secret
+                      key: password
+                - name: MARIADB_DATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: mariadb-secret
+                      key: database
+              command:
+                - /bin/sh
+                - -c
+              args:
+                - >-
+                  mariadb-dump -h mariadb -u"$MARIADB_USER"
+                  -p"$MARIADB_PASSWORD" "$MARIADB_DATABASE"
+                  > "/backup/${MARIADB_DATABASE}-$(date +%Y%m%d%H%M%S).sql"
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+          volumes:
+            - name: backup
+              persistentVolumeClaim:
+                claimName: nfs-test-pvc

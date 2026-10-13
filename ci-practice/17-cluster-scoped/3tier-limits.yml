@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: 3tier-quota
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 2Gi
+    limits.cpu: "4"
+    limits.memory: 4Gi
+    pods: "12"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: 3tier-default-limits
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 100m
+        memory: 128Mi
+      default:
+        cpu: 500m
+        memory: 256Mi
+      # 이보다 큰 자원 요청은 LimitRange admission 단계에서 거부한다.
+      max:
+        cpu: "1"
+        memory: 1Gi

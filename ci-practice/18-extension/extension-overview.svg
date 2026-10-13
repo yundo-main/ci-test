@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">CRD와 Custom Resource 실습 흐름</title>
+  <desc id="desc">CRD가 Kubernetes API에 ThreeTierBackup 리소스 종류를 등록하고 Custom Resource가 선언 상태로 저장되지만 Controller나 Operator가 없어 실제 백업 Job은 실행하지 않는 흐름</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fbff"/>
+      <stop offset="1" stop-color="#f1f5f9"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#1f2937" flood-opacity="0.14"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="muted-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#94a3b8"/>
+    </marker>
+    <style>
+      .title { font: 700 30px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #475569; }
+      .section { font: 700 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1e3a8a; }
+      .box-title { font: 700 19px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0f172a; }
+      .box-text { font: 400 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #334155; }
+      .small { font: 400 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #475569; }
+      .label { font: 600 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1d4ed8; }
+      .warning { font: 700 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #9a3412; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect x="34" y="28" width="1212" height="664" rx="22" fill="#ffffff" stroke="#dbe7f3" stroke-width="2"/>
+
+  <text x="68" y="78" class="title">18. CRD · Custom Resource</text>
+  <text x="68" y="108" class="subtitle">백업 정책 API 모델을 등록하고 선언 상태를 확인하는 실습</text>
+
+  <text x="78" y="158" class="section">1. API 확장</text>
+  <rect x="78" y="180" width="246" height="128" rx="16" fill="#dbeafe" stroke="#60a5fa" stroke-width="2" filter="url(#shadow)"/>
+  <text x="104" y="218" class="box-title">CRD</text>
+  <text x="104" y="247" class="box-text">ThreeTierBackup</text>
+  <text x="104" y="274" class="small">리소스 종류 등록</text>
+
+  <path d="M324 244 H388" stroke="#2563eb" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <text x="332" y="228" class="label">apply</text>
+
+  <rect x="396" y="144" width="360" height="200" rx="18" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+  <text x="424" y="180" class="box-title">Kubernetes API Server</text>
+  <text x="424" y="212" class="box-text">Custom API endpoint 생성</text>
+  <rect x="424" y="234" width="304" height="78" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="446" y="266" class="box-text">threetierbackups.example.com</text>
+  <text x="446" y="291" class="small">kubectl로 조회·설명 가능</text>
+
+  <path d="M756 244 H820" stroke="#2563eb" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <text x="762" y="228" class="label">apply</text>
+
+  <text x="828" y="158" class="section">2. 선언 상태</text>
+  <rect x="828" y="180" width="190" height="128" rx="16" fill="#dcfce7" stroke="#4ade80" stroke-width="2" filter="url(#shadow)"/>
+  <text x="850" y="218" class="box-title">Custom Resource</text>
+  <text x="850" y="247" class="box-text">mariadb-backup-policy</text>
+  <text x="850" y="274" class="small">spec에 정책 저장</text>
+
+  <path d="M1018 244 H1080" stroke="#94a3b8" stroke-width="3" stroke-dasharray="8 7" fill="none" marker-end="url(#muted-arrow)"/>
+
+  <rect x="1088" y="180" width="126" height="128" rx="16" fill="#fff7ed" stroke="#fb923c" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1107" y="218" class="box-title">API 저장</text>
+  <text x="1107" y="247" class="box-text">선언 상태</text>
+  <text x="1107" y="274" class="small">Job 없음</text>
+
+  <rect x="78" y="390" width="1136" height="226" rx="18" fill="#fff7ed" stroke="#fdba74" stroke-width="2"/>
+  <text x="106" y="430" class="warning">중요: Controller·Operator가 없는 학습용 API 모델</text>
+  <text x="106" y="461" class="box-text">CRD와 Custom Resource를 생성해도 이를 감시하고 실제 작업으로 변환할 Controller가 없으면</text>
+  <text x="106" y="487" class="box-text">백업 Job, CronJob, dump 파일은 자동으로 생성되지 않는다.</text>
+
+  <rect x="106" y="520" width="300" height="68" rx="12" fill="#ffffff" stroke="#fdba74"/>
+  <text x="128" y="549" class="box-title">이 실습의 결과</text>
+  <text x="128" y="573" class="small">API 리소스 등록·조회·선언 확인</text>
+
+  <path d="M406 554 H470" stroke="#94a3b8" stroke-width="3" stroke-dasharray="8 7" fill="none" marker-end="url(#muted-arrow)"/>
+
+  <rect x="478" y="520" width="300" height="68" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="500" y="549" class="box-title">실제 백업이 필요하면</text>
+  <text x="500" y="573" class="small">15번 Batch Job 예제를 사용</text>
+
+  <path d="M778 554 H842" stroke="#2563eb" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+
+  <rect x="850" y="520" width="336" height="68" rx="12" fill="#dbeafe" stroke="#60a5fa"/>
+  <text x="872" y="549" class="box-title">15-batch/3tier-mariadb-backup.yml</text>
+  <text x="872" y="573" class="small">MariaDB dump를 실행하는 실제 Job</text>
+</svg>

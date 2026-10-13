@@ -1,0 +1,29 @@
+# 가장 단순한 1 Pod·2 Container 예제
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-fastapi-pod
+spec:
+  # nginx, FastAPI, MariaDB 이미지를 다운로드할 때 사용할 인증 Secret이다.
+  imagePullSecrets:
+    - name: jarrod-secret-test
+  hostAliases:
+    - ip: 127.0.0.1
+      hostnames:
+        - mariadb
+
+  containers:
+    - name: nginx
+      image: jarrodkim/nginx-test:latest
+      ports:
+        - name: http
+          containerPort: 80
+
+    - name: fastapi
+      image: jarrodkim/fastapi-test:latest
+      ports:
+        - name: api
+          containerPort: 8000
+
+    - name: mariadb
+      image: jarrodkim/mariadb-test:latest

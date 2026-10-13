@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  # 각 노드에서 실행할 Node Exporter Pod 묶음의 이름
+  name: node-exporter
+  labels:
+    app: node-exporter
+spec:
+  # Pod template의 app 라벨과 일치해야 한다.
+  selector:
+    matchLabels:
+      app: node-exporter
+  template:
+    metadata:
+      labels:
+        app: node-exporter
+    spec:
+      # 모든 노드의 메트릭을 수집하므로 스케줄 제외 노드에도 배치한다.
+      tolerations:
+        - operator: Exists
+      containers:
+        - name: node-exporter
+          # 노드의 CPU·메모리·파일시스템 메트릭을 제공하는 Exporter
+          image: prom/node-exporter:v1.12.1
+          ports:
+            - name: metrics
+              containerPort: 9100
+          resources:
+            # 모든 노드에 배치되므로 작은 기본 자원을 요청한다.
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          args:
+            # 컨테이너 내부가 아닌 호스트의 파일시스템을 기준으로 메트릭을 수집한다.
+            - --path.procfs=/host/proc
+            - --path.sysfs=/host/sys
+            - --path.rootfs=/host/root
+          volumeMounts:
+            - name: proc
+              mountPath: /host/proc
+              readOnly: true
+            - name: sys
+              mountPath: /host/sys
+              readOnly: true
+            - name: root
+              mountPath: /host/root
+              readOnly: true
+      volumes:
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: root
+          hostPath:
+            path: /

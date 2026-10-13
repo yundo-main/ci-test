@@ -1,0 +1,7 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: fastcgi-backend-high
+value: 1000000
+globalDefault: false
+description: "3-Tier Backend 실습용 우선순위"
